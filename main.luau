@@ -10,7 +10,7 @@ local intents_module = discordu.intents
 local embeds = discordu.embeds
 local messages = discordu.messages
 
-local types = discordu.types
+local _types = discordu.types
 
 --// BOT VARIABLES \\
 local bot_intents = intents_module.default()
@@ -26,9 +26,9 @@ local env = process.env
 
 --// STATIC VARIABLES \\
 local GUILD_IDS = {"1443673571401404540"}
-local TOKEN = env.TOKEN
+local TOKEN = env.EVENT_BOT_TOKEN
 
-local SUBMISSION_EMBED_TEMPLATE: types.embed_args = {
+local SUBMISSION_EMBED_TEMPLATE: _types.embed_args = {
     title = "Submission by {user}",
     description = "Community submission from {user_mention} on {timestamp}",
 
@@ -49,7 +49,7 @@ local TRANSCRIPTS_CHANNEL = "1460081557770338448"
 local ROLES_WITH_REMOVE_PERMISSION = {"1460075118859522089"}
 
 --// DYNAMIC VARIABLES \\--
-local templates: {[string]: {embed: types.embed, message: string}} = {}
+local templates: {[string]: {embed: _types.embed, message: string}} = {}
 
 --// BOT
 local bot = discordu.Bot(TOKEN, bot_intents)
@@ -104,7 +104,7 @@ local function get_discord_timestamp(given_time: string?): string
     return `<t:{given_time}:f>`
 end
 
-local function create_submission_embed(user: types.user, provided_link: string): types.Embed
+local function create_submission_embed(user: _types.user, provided_link: string): _types.Embed
     if is_valid_game_link(provided_link) ~= true then
         return nil
     end
@@ -120,7 +120,7 @@ local function create_submission_embed(user: types.user, provided_link: string):
     return embeds.Embed(new_submission)
 end
 
-local function submission_created(user: user, provided_link: string): types.Embed?
+local function submission_created(user: user, provided_link: string): _types.Embed?
     if templates[user.id] ~= nil then
         return nil
     end
@@ -137,25 +137,12 @@ end)
 bot:Run()
 
 --// CONSTRUCTORS \\
-bot:slash_command({name = "submit", description = "Creates a community submission!", options = {
+bot:slash_command({name = "submit", description = "Submit a game link to be reviewed and potentially hosted as a community submission by Events Hosts!", options = {
     {
         type = 3,
 
         name = "link",
-        description = "The link you want to submit.",
-    }
-}}, function(interaction)
-    interaction:send({content = "Processed."}, false, true)
-end)
-
-bot:delete_slash_command("submit")
-
-bot:slash_command({name = "submit", description = "Creates a community submission!", options = {
-    {
-        type = 3,
-
-        name = "link",
-        description = "The link you want to submit.",
+        description = "The game link you wish to submit. (https://www.roblox.com/games/...)",
 
         required = true
     },
@@ -199,17 +186,22 @@ bot:slash_command({name = "submit", description = "Creates a community submissio
             
             local favor = "N/A"
             if message then
-                local up_reactions = #bot:get_reactions(message, UP_ARROW)
-                local down_reactions = #bot:get_reactions(message, DOWN_ARROW)
+                local up_reactions = #bot:get_reactions(message, UP_ARROW)-1
+                local down_reactions = #bot:get_reactions(message, DOWN_ARROW)-1
 
-                favor = tostring(up_reactions/down_reactions)
+                local total = up_reactions+down_reactions
+                local percentage = math.clamp((up_reactions/total)*100, 0, 100)
+
+                favor = percentage
             end
 
             local user_post = templates[user.id]
             messages.delete_message(bot, SUBMISSIONS_CHANNEL, user_post.message)
 
             local user_embed = user_post.embed
-            bot:send_message({content=`**Favor:** {favor}`, embeds=user_embed ~= nil and {user_embed} or nil}, TRANSCRIPTS_CHANNEL)
+            local emoji = if favor == 100 then "🎉" elseif favor > 50 then "👍" elseif favor == 50 then "😐" else "👎"
+
+            bot:send_message({content=`**Favor:** {tostring(favor)}% {emoji}`, embeds=user_embed ~= nil and {user_embed} or nil}, TRANSCRIPTS_CHANNEL)
 
             templates[user.id] = nil
             bot:DisconnectListener("remove_submission"..user.id)
@@ -217,6 +209,6 @@ bot:slash_command({name = "submit", description = "Creates a community submissio
 
         templates[user.id] = {embed=embed, message=message.id}
     else
-        interaction:send({content = "Failed to send interaction. You may have one currently active, or you may have an invalid link."}, false, true)
+        interaction:send({content = "The bot failed to create an embed for this submission. Potential issues inclue:\n> - You may already have a submission open - wait for a Senior Events Host or above to review it.\n> - You may have submitted an invalid roblox game link - make sure you're using the format 'https://www.roblox.com/games/...`"}, false, true)
     end
 end, GUILD_IDS)
