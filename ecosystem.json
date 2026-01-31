@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "name": "RDB-Events-Temp",
+      "script": "/root/lune",
+      "args": ["run", "main"],
+      "instances": 1,
+      "restart_delay": 2000
+    }
+  ]
+}
