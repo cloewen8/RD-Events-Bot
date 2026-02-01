@@ -25,7 +25,7 @@ load_env = nil
 local env = process.env
 
 --// STATIC VARIABLES \\
-local GUILD_IDS = {"1443673571401404540"}
+local GUILD_IDS = {"489424959270158356"}
 local TOKEN = env.EVENT_BOT_TOKEN
 
 local SUBMISSION_EMBED_TEMPLATE: _types.embed_args = {
@@ -212,3 +212,4 @@ bot:slash_command({name = "submit", description = "Submit a game link to be revi
         interaction:send({content = "The bot failed to create an embed for this submission. Potential issues inclue:\n> - You may already have a submission open - wait for a Senior Events Host or above to review it.\n> - You may have submitted an invalid roblox game link - make sure you're using the format 'https://www.roblox.com/games/...`"}, false, true)
     end
 end, GUILD_IDS)
+
