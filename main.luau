@@ -46,7 +46,7 @@ local DEFAULT_IMAGE = "https://i.ibb.co/1JsyypNV/image.png"
 local SUBMISSIONS_CHANNEL = "1467657478056444107"
 local TRANSCRIPTS_CHANNEL = "1467657768327446700"
 
-local ROLES_WITH_REMOVE_PERMISSION = {"1460075118859522089"}
+local ROLES_WITH_REMOVE_PERMISSION = {"1438693293532909669⁩"}
 
 --// DYNAMIC VARIABLES \\--
 local templates: {[string]: {embed: _types.embed, message: string}} = {}
@@ -212,5 +212,6 @@ bot:slash_command({name = "submit", description = "Submit a game link to be revi
         interaction:send({content = "The bot failed to create an embed for this submission. Potential issues inclue:\n> - You may already have a submission open - wait for a Senior Events Host or above to review it.\n> - You may have submitted an invalid roblox game link - make sure you're using the format 'https://www.roblox.com/games/...`"}, false, true)
     end
 end, GUILD_IDS)
+
 
 
